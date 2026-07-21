@@ -68,7 +68,6 @@ public class AppointmentBookingServiceTests
         }
         catch (ArgumentException)
         {
-            // Expected exception - test passes
         }
     }
 
@@ -82,7 +81,6 @@ public class AppointmentBookingServiceTests
         }
         catch (ArgumentException)
         {
-            // Expected exception - test passes
         }
     }
 
@@ -96,7 +94,6 @@ public class AppointmentBookingServiceTests
         }
         catch (ArgumentException)
         {
-            // Expected exception - test passes
         }
     }
 
@@ -129,7 +126,6 @@ public class AppointmentBookingServiceTests
         }
         catch (ArgumentException)
         {
-            // Expected exception - test passes
         }
     }
 
@@ -145,7 +141,6 @@ public class AppointmentBookingServiceTests
         }
         catch (ArgumentNullException)
         {
-            // Expected exception - test passes
         }
     }
 
@@ -161,7 +156,6 @@ public class AppointmentBookingServiceTests
         }
         catch (ArgumentNullException)
         {
-            // Expected exception - test passes
         }
     }
 
@@ -201,5 +195,77 @@ public class AppointmentBookingServiceTests
 
         Assert.IsFalse(result.Success);
         StringAssert.Contains(result.Message, "missing");
+    }
+
+    // ========================================
+    // EXTRA TESTS FOR TASK 2
+    // ========================================
+
+    [TestMethod]
+    public void BookAppointment_WhenDateIsToday_ReturnsFailureWithClearMessage()
+    {
+        var doctor = new Doctor("D001", "Dr Mark", 5);
+        var patient = new Patient("P001", "Diana William");
+        var request = new AppointmentRequest(patient, doctor, DateTime.Today);
+        var service = new AppointmentBookingService();
+
+        BookingResult result = service.BookAppointment(request);
+
+        Assert.IsFalse(result.Success);
+        StringAssert.Contains(result.Message, "at least one day in advance");
+    }
+
+    [TestMethod]
+    public void BookAppointment_WhenDateIsTomorrow_ReturnsSuccess()
+    {
+        var doctor = new Doctor("D001", "Dr Mark", 5);
+        var patient = new Patient("P001", "Diana William");
+        var request = new AppointmentRequest(patient, doctor, DateTime.Today.AddDays(1));
+        var service = new AppointmentBookingService();
+
+        BookingResult result = service.BookAppointment(request);
+
+        Assert.IsTrue(result.Success);
+    }
+
+    [TestMethod]
+    public void BookAppointment_WhenPatientIdIsMissing_ThrowsException()
+    {
+        // Patient constructor already validates that ID cannot be empty
+        try
+        {
+            var patient = new Patient("", "Diana William");
+            Assert.Fail("Expected ArgumentException was not thrown.");
+        }
+        catch (ArgumentException)
+        {
+            // Expected - test passes
+        }
+    }
+
+    [TestMethod]
+    public void BookAppointment_WhenSuccessful_MessageIncludesDoctorsName()
+    {
+        var doctor = new Doctor("D001", "Dr Mark", 5);
+        var patient = new Patient("P001", "Diana William");
+        var request = new AppointmentRequest(patient, doctor, DateTime.Today.AddDays(1));
+        var service = new AppointmentBookingService();
+
+        BookingResult result = service.BookAppointment(request);
+
+        StringAssert.Contains(result.Message, "Dr Mark");
+    }
+
+    [TestMethod]
+    public void BookAppointment_WhenSuccessful_MessageIncludesPatientDisplayName()
+    {
+        var doctor = new Doctor("D001", "Dr Mark", 5);
+        var patient = new Patient("P001", "Diana William", "Aroha");
+        var request = new AppointmentRequest(patient, doctor, DateTime.Today.AddDays(1));
+        var service = new AppointmentBookingService();
+
+        BookingResult result = service.BookAppointment(request);
+
+        StringAssert.Contains(result.Message, "Aroha");
     }
 }
